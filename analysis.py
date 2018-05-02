@@ -11,6 +11,7 @@ if __name__=='__main__':
 		for filePath in fileList:
 			handledata.init()
 			#pdb.set_trace()
+			print('')
 			print(filePath)
 			with open(filePath, 'r') as f:
 				for line in f.readlines():

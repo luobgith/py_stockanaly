@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, itchat, tkinter
+import os, tkinter
 #from tkinter import messagebox
 import tkinter as tk
 import stock

@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import os, itchat, tkinter
+#from tkinter import messagebox
+import tkinter as tk
 import stock
 from datetime import datetime
 
@@ -51,3 +54,52 @@ def capitalMin(mflag, timeNow, capitalList):
 	if(cmoney > 0):
 		inorout = 1
 	return stock.CapitalEn(ccount, cmoney, inorout, capitalList[-1].ctime)
+
+#输出类字段及值（需要把字段配在这里）
+def printObjVal(obj):
+	objAttrTuple = ('phigh', 'plow', 'popen', 'pclose', 'pcounts', 'pmomey', 'ptime', 'cmoney', 'ccount', 'inorout', 'ctime', 'k', 'd', 'j', 'kdjtime')
+	for attr in objAttrTuple:
+		if( hasattr(obj, attr) ):
+			print(attr, '=', getattr(obj, attr), end=' | ')
+	print('')
+
+#获取路径下的所有文件
+def getFilesByDir(dirPath, suffix = '.txt'):
+	resList = []
+	for root, dirs, files in os.walk(dirPath):
+		for file in files:
+			if os.path.splitext(file)[1] == suffix:
+				resList.append(os.path.join(root, file))
+	return resList
+
+#微信发送消息 不好用
+def sengMsgWeixin():
+	itchat.auto_login(hotReload=True)
+	print(itchat.send('Hello, filehelper', toUserName='filehelper'))
+
+def showother():
+	otherFrame.update()
+	otherFrame.deiconify()
+	hide_thd()
+def delaysHideOther():
+    time.sleep(5)
+    otherFrame.withdraw()
+	
+def sendMsgTkinter():
+	#print(tkinter.messagebox.showinfo('提示','人生苦短'))
+	root = tk.Tk()
+	otherFrame = tk.Toplevel()
+	otherFrame.withdraw()
+	otherFrame.attributes('-toolwindow', True)
+	otherFrame.geometry('150x50')
+	tk.Label(otherFrame, text="5秒后关闭!", width=50).pack()
+	root.geometry('150x80')
+	tk.Button(root, text='显示弹窗', width=10, command=showother).pack()
+	root.mainloop()
+
+if __name__=='__main__':
+	sendMsgTkinter()
+		
+
+
+

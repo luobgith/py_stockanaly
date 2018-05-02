@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import utils
 
 def point(fieldName, candleDict, kdjDict, capitalDict, data):
 	can = candleDict[fieldName][-1]
@@ -7,7 +8,7 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 	if( (abs(can.popen - can.pclose) < 0.03) and ((can.phigh - min(can.pclose,can.popen)) < 0.04) and  (can.phigh - can.plow) / (float(data[1])*0.1) > 0.065 ):
 		if(kdjFil.k < 50 and kdjFil.d < 50 and kdjFil.j < 50):
 			print('++++++++++++++++++')
-			printObjVal(can)
+			utils.printObjVal(can)
 			print('++++++++++++++++++')
 	#kdj 出
 	ifor = 8	#往前几个推是>0 的
@@ -17,5 +18,5 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 				ifor -= 1
 		if(ifor == 0):
 			print('------------------')
-			printObjVal(kdjFil)
+			utils.printObjVal(kdjFil)
 			print('------------------')

@@ -1,17 +1,29 @@
 # -*- coding: utf-8 -*-
 import utils
 
+#全局变量True False
+release = True
+
 def point(fieldName, candleDict, kdjDict, capitalDict, data):
 	ifor = 8
+	#fokDif = 
 	
-	can = candleDict[fieldName][-1]
+	candEn = candleDict[fieldName][-1]
 	kdjFil = kdjDict[fieldName][-1]
-	#k上十字 入
-	if( (abs(can.popen - can.pclose) < 0.03) and ((can.phigh - min(can.pclose,can.popen)) < 0.04) and  (can.phigh - can.plow) / (float(data[1])*0.1) > 0.061 ):
-		if(kdjFil.k < 40 and kdjFil.d < 40 and kdjFil.j < 40):
-			print('Lev5::'+fieldName+'++++++++++++++++++')
-			utils.printObjVal(can)
-			print('++++++++++++++++++')
+	#k上十字 入 5级
+	if( (abs(candEn.popen - candEn.pclose) < 0.03) and ((candEn.phigh - min(candEn.pclose,candEn.popen)) < 0.04) and  (candEn.phigh - candEn.plow) / (float(data[1])*0.1) > 0.061 ):
+		if(kdjFil.k < 30 and kdjFil.d < 30 and kdjFil.j < 30):
+			print('+++Lev5:{0}:{1}'.format(fieldName, utils.objToString(candEn)))
+			if(release):
+				utils.msgTips('Lev5:{0}:{1}'.format(fieldName, utils.objToString(candEn)), 'red')
+			return True
+	#k下十字 出 5级
+	if( (abs(candEn.popen - candEn.pclose) < 0.03) and ((max(candEn.pclose,candEn.popen) - candEn.plow) < 0.04) and (candEn.phigh - candEn.plow) / (float(data[1])*0.1) > 0.061 ):
+		if(kdjFil.k > 70 and kdjFil.d > 70 and kdjFil.j > 70):
+			print('+++Lev5:{0}:{1}'.format(fieldName, utils.objToString(candEn)))
+			if(release):
+				utils.msgTips('Lev5:{0}:{1}'.format(fieldName, utils.objToString(candEn)), 'green')
+			return True
 	#KDJ 入
 	if( abs(kdjFil.j - kdjFil.d) < ifor and  abs(kdjFil.d - kdjFil.k) < ifor ):
 		for kdjfor in kdjDict[fieldName][-ifor: ]:
@@ -32,9 +44,4 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 			utils.printObjVal(kdjFil)
 			print('------------------')
 			
-	#k下十字 出
-	if( (abs(can.popen - can.pclose) < 0.03) and ((max(can.pclose,can.popen) - can.plow) < 0.04) and (can.phigh - can.plow) / (float(data[1])*0.1) > 0.061 ):
-		if(kdjFil.k > 70 and kdjFil.d > 70 and kdjFil.j > 70):
-			print('Lev5::'+fieldName+'------------------')
-			utils.printObjVal(can)
-			print('------------------')
+	

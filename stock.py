@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 #类
 class CandleEn:
-	def __init__(self, popen, pclose, ptime, phigh=0, plow=0, pcounts=0, pmoney=0):
+	def __init__(self, name, popen, pclose, ptime, phigh=0, plow=0, pcounts=0, pmoney=0):
+		self.name = name
 		self.popen = popen
 		self.pclose = pclose
 		self.ptime = ptime
@@ -12,7 +13,8 @@ class CandleEn:
 
 #类
 class KDJEn:
-	def __init__(self, rsv, k=50, d=50, kdjtime='09:00:00'):
+	def __init__(self, name, rsv, k=50, d=50, kdjtime='09:00:00'):
+		self.name = name
 		self.rsv = rsv
 		self.k = k
 		self.d = d
@@ -21,7 +23,8 @@ class KDJEn:
 
 #类
 class CapitalEn:
-	def __init__(self, ccount, cmoney, inorout, ctime):
+	def __init__(self, name, ccount, cmoney, inorout, ctime):
+		self.name = name
 		self.ccount = ccount
 		self.cmoney = cmoney
 		self.inorout = inorout

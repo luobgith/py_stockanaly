@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
-import os, tkinter
-#from tkinter import messagebox
-import tkinter as tk
-import stock
+import os, threading, time
+from tkinter import *
 from datetime import datetime
+import stock
+
+#类的字段名
+objAttrTuple = ('phigh', 'plow', 'popen', 'pclose', 'pcounts', 'pmomey', 'ptime', 'cmoney', 'ccount', 'inorout', 'ctime', 'k', 'd', 'j', 'kdjtime', 'name')
+#kdj的两个条件
+minKdjCon = 5
+maxKdjCon = 15
 
 def getDataFilterMin(timeNow,mflag):
 	return lambda list: ( timeNow - datetime.strptime(list[31],'%H:%M:%S') ).seconds <= mflag*60
@@ -18,9 +23,9 @@ def candleMin(mflag, timeNow, dataList):
 	filtResList = list(filter(getDataFilterMin(timeNow, mflag),dataList[-mflag * 100: ]))
 	dataLast = filtResList[-1]
 	if(len(filtResList) > 1):
-		candle = stock.CandleEn(float(filtResList[0][3]), float(filtResList[-2][3]), dataLast[31])
+		candle = stock.CandleEn(dataLast[0], float(filtResList[0][3]), float(filtResList[-2][3]), dataLast[31])
 	else:
-		candle = stock.CandleEn(float(filtResList[0][3]), float(filtResList[0][3]), dataLast[31])
+		candle = stock.CandleEn(dataLast[0], float(filtResList[0][3]), float(filtResList[0][3]), dataLast[31])
 	candle.pcounts = ( int(filtResList[-1][8]) - int(filtResList[0][8]) )/100
 	candle.pmomey = ( float(filtResList[-1][9]) - float(filtResList[0][9]) )/10000
 	#排序
@@ -39,13 +44,12 @@ def kdjCalculate(candleList, kdjList):
 	rsvNow = ( float( candleList[-1].pclose ) - lowinkp ) / ( highinkp - lowinkp ) * 100
 	kvalue = ( rsvNow + 2*kdjList[-1].k ) / 3
 	dvalue = ( kvalue + 2*kdjList[-1].d ) / 3
-	return stock.KDJEn(rsvNow, kvalue, dvalue, candleList[-1].ptime)
+	return stock.KDJEn(candleList[-1].name, rsvNow, kvalue, dvalue, candleList[-1].ptime)
 
 #zi jing
 def capitalMin(mflag, timeNow, capitalList):
 	if(mflag > 60 or mflag < 0 ):
 		raise ValueError('input value must be 0< mflag <60.')
-	#pdb.set_trace()
 	filtResList = list(filter(getCapitalFilterMin(timeNow, mflag),capitalList[-mflag * 100: ]))
 	ccount, cmoney, inorout = 0,0,-1
 	for cap in filtResList:
@@ -53,15 +57,51 @@ def capitalMin(mflag, timeNow, capitalList):
 		cmoney += cap.cmoney*cap.inorout
 	if(cmoney > 0):
 		inorout = 1
-	return stock.CapitalEn(ccount, cmoney, inorout, capitalList[-1].ctime)
+	return stock.CapitalEn(capitalList[-1].name, ccount, cmoney, inorout, capitalList[-1].ctime)
 
+#是否满足KDJ超买条件
+def buyKdjCondition(kdjList):
+	goldCon = 30
+	kdjEn = kdjList[-1]
+	if(kdjEn.j > goldCon or kdjEn.d > goldCon or kdjEn.k > goldCon):
+		return False
+	if( abs(kdjEn.j - kdjEn.d) < minKdjCon and abs(kdjEn.d - kdjEn.k) < minKdjCon ):
+		return True
+	if( abs(kdjEn.j - kdjEn.d) < maxKdjCon and abs(kdjEn.d - kdjEn.k) < maxKdjCon ):
+		kdjEnAfter = kdjList[-2]
+		if( kdjEn.j - kdjEn.d > 0 and kdjEn.d - kdjEn.k > 0 and kdjEnAfter.j - kdjEnAfter.d < 0 and kdjEnAfter.d - kdjEnAfter.k < 0 ):
+			return True
+	return False
+	
+#是否满足KDJ超卖条件
+def sellKdjCondition(kdjList):
+	deathCon = 70
+	kdjEn = kdjList[-1]
+	if(kdjEn.j < deathCon or kdjEn.d < deathCon or kdjEn.k < deathCon):
+		return False
+	if( abs(kdjEn.j - kdjEn.d) < minKdjCon and abs(kdjEn.d - kdjEn.k) < minKdjCon ):
+		return True
+	if( abs(kdjEn.j - kdjEn.d) < maxKdjCon and abs(kdjEn.d - kdjEn.k) < maxKdjCon ):
+		kdjEnAfter = kdjList[-2]
+		if( kdjEn.j - kdjEn.d < 0 and kdjEn.d - kdjEn.k < 0 and kdjEnAfter.j - kdjEnAfter.d > 0 and kdjEnAfter.d - kdjEnAfter.k > 0 ):
+			return True
+	return False
+	
 #输出类字段及值（需要把字段配在这里）
 def printObjVal(obj):
-	objAttrTuple = ('phigh', 'plow', 'popen', 'pclose', 'pcounts', 'pmomey', 'ptime', 'cmoney', 'ccount', 'inorout', 'ctime', 'k', 'd', 'j', 'kdjtime')
+	#objAttrTuple = ('name', 'phigh', 'plow', 'popen', 'pclose', 'pcounts', 'pmomey', 'ptime', 'cmoney', 'ccount', 'inorout', 'ctime', 'k', 'd', 'j', 'kdjtime')
 	for attr in objAttrTuple:
 		if( hasattr(obj, attr) ):
 			print(attr, '=', getattr(obj, attr), end=' | ')
 	print('')
+	
+#对象转字符串输出
+def objToString(obj):
+	resStr = ''
+	for attr in objAttrTuple:
+		if( hasattr(obj, attr) ):
+			resStr = resStr + attr + '=' + str(getattr(obj, attr)) + '|'
+	return resStr
 
 #获取路径下的所有文件
 def getFilesByDir(dirPath, suffix = '.txt'):
@@ -72,33 +112,38 @@ def getFilesByDir(dirPath, suffix = '.txt'):
 				resList.append(os.path.join(root, file))
 	return resList
 
+#比较两数大小,前一个数减后一个数，返回1 0 -1
+def conpareTowNum(num1, num2):
+	nflag = num1 - num2
+	if(nflag > 0):
+		return 1
+	elif(nflag < 0):
+		return -1
+	else:
+		return 0
+		
+#新增线程弹出窗体 消息，颜色		
+def msgTips(msg, color):
+	threading.Thread(target=sendMsgTkinter, args=(msg, color)).start()
+	
+#线程执行的tk函数
+def sendMsgTkinter(msg, color):
+	root = Tk()
+	text = Text(root, height=3, fg=color)#height=4, width=30,fg=fg
+	text.insert(END,msg)
+	text.pack()
+	root.mainloop()
+
+#####一下为测试函数，未使用
 #微信发送消息 不好用
 def sengMsgWeixin():
 	itchat.auto_login(hotReload=True)
 	print(itchat.send('Hello, filehelper', toUserName='filehelper'))
-
-def showother():
-	otherFrame.update()
-	otherFrame.deiconify()
-	hide_thd()
-def delaysHideOther():
-    time.sleep(5)
-    otherFrame.withdraw()
 	
-def sendMsgTkinter():
-	#print(tkinter.messagebox.showinfo('提示','人生苦短'))
-	root = tk.Tk()
-	otherFrame = tk.Toplevel()
-	otherFrame.withdraw()
-	otherFrame.attributes('-toolwindow', True)
-	otherFrame.geometry('150x50')
-	tk.Label(otherFrame, text="5秒后关闭!", width=50).pack()
-	root.geometry('150x80')
-	tk.Button(root, text='显示弹窗', width=10, command=showother).pack()
-	root.mainloop()
-
 if __name__=='__main__':
-	sendMsgTkinter()
+	tmp = 1
+	if(tmp):
+		print('123')
 		
 
 

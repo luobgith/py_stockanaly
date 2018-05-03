@@ -6,27 +6,26 @@ if __name__=='__main__':
 	conf = configparser.ConfigParser()
 	conf.read('config.conf')
 	originalDir = conf.get('stock', 'originalDir')
-	threadList = []
+	#threadList = []
 	for stockCode in conf.get('stock', 'stockCodes').split(','):
 		fileList = utils.getFilesByDir(originalDir + stockCode)
+		#每一个都分析
+		"""
+		for filePath in fileList:
+			print(filePath)
+			t = threading.Thread(target=handledata.filesStock, args=(filePath, stockCode, ))
+			t.start()
+			t.join()
+		"""
+		
+		#只分析最新的，与实际一样
 		if(len(fileList) > 0):
 			t = threading.Thread(target=handledata.filesStock, args=(fileList[-1], stockCode, ))
 			t.start()
-			threadList.append(t)
+			#threadList.append(t)
+			
 """	
 	for t in threadList:
 		t.join()
-"""
-"""
-		for filePath in fileList:
-			handledata.init()
-			#pdb.set_trace()
-			print('')
-			print(filePath)
-			with open(filePath, 'r') as f:
-				for line in f.readlines():
-					handledata.analysisdata(line)
-					#pass
-		#print(fileList)
 """
 

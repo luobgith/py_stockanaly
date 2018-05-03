@@ -46,6 +46,8 @@ def getPoint(timesup):
 			localVal.kdjDict[fieldName].append(utils.kdjCalculate(localVal.candleDict[fieldName], localVal.kdjDict[fieldName]))
 			#计算money in or out
 			localVal.capitalDict[fieldName].append(utils.capitalMin(mflag, timesup, localVal.capitalList))
+			#if(fieldName == 'min5' and len(localVal.kdjDict['min5'])>0):
+				#print(utils.objToString(localVal.kdjDict['min5'][-1]))
 
 			#选点
 			point.point(fieldName, localVal.candleDict, localVal.kdjDict, localVal.capitalDict, localVal.dataList[-1])
@@ -66,7 +68,7 @@ def analysisdata(contents, stockCode, **kw):
 			inorout = utils.conpareTowNum(float(data[3]), moneyDif / doneDif)
 			localVal.capitalList.append(stock.CapitalEn(data[0], doneDif, moneyDif, inorout, data[31]))
 			localVal.dataList.append(data)
-			#时间点
+			#需要监控的stock
 			if(stockCode in stockPoint):
 				getPoint(datetime.strptime(data[31],'%H:%M:%S'))	#计算点	
 			if(f):
@@ -77,7 +79,6 @@ def filesStock(filePath, stockCode):
 	init_t(stockCode)
 	with open(filePath) as f:
 		for line in f.readlines():
-			#data = pattern.findall(line.strip())[0].split(',')
 			analysisdata(line,stockCode)
 
 #网络获取数据

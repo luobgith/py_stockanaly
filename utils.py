@@ -8,7 +8,7 @@ import stock
 objAttrTuple = ('phigh', 'plow', 'popen', 'pclose', 'pcounts', 'pmomey', 'ptime', 'cmoney', 'ccount', 'inorout', 'ctime', 'k', 'd', 'j', 'kdjtime', 'name')
 #kdj的两个条件
 minKdjCon = 5
-maxKdjCon = 15
+maxKdjCon = 10
 
 def getDataFilterMin(timeNow,mflag):
 	return lambda list: ( timeNow - datetime.strptime(list[31],'%H:%M:%S') ).seconds <= mflag*60
@@ -61,29 +61,29 @@ def capitalMin(mflag, timeNow, capitalList):
 
 #是否满足KDJ超买条件
 def buyKdjCondition(kdjList):
-	goldCon = 30
+	buyCon = 30
 	kdjEn = kdjList[-1]
-	if(kdjEn.j > goldCon or kdjEn.d > goldCon or kdjEn.k > goldCon):
+	if(kdjEn.j > buyCon or kdjEn.d > buyCon or kdjEn.k > buyCon):
 		return False
-	if( abs(kdjEn.j - kdjEn.d) < minKdjCon and abs(kdjEn.d - kdjEn.k) < minKdjCon ):
+	if( abs(kdjEn.j - kdjEn.k) < minKdjCon and abs(kdjEn.k - kdjEn.d) < minKdjCon ):
 		return True
-	if( abs(kdjEn.j - kdjEn.d) < maxKdjCon and abs(kdjEn.d - kdjEn.k) < maxKdjCon ):
+	if( abs(kdjEn.j - kdjEn.k) < maxKdjCon and abs(kdjEn.k - kdjEn.d) < maxKdjCon ):
 		kdjEnAfter = kdjList[-2]
-		if( kdjEn.j - kdjEn.d > 0 and kdjEn.d - kdjEn.k > 0 and kdjEnAfter.j - kdjEnAfter.d < 0 and kdjEnAfter.d - kdjEnAfter.k < 0 ):
+		if( kdjEn.j - kdjEn.k > 0 and kdjEn.k - kdjEn.d > 0 and kdjEnAfter.j - kdjEnAfter.k < 0 and kdjEnAfter.k - kdjEnAfter.d < 0 ):
 			return True
 	return False
 	
 #是否满足KDJ超卖条件
 def sellKdjCondition(kdjList):
-	deathCon = 70
+	sellCon = 70
 	kdjEn = kdjList[-1]
-	if(kdjEn.j < deathCon or kdjEn.d < deathCon or kdjEn.k < deathCon):
+	if(kdjEn.j < sellCon or kdjEn.d < sellCon or kdjEn.k < sellCon):
 		return False
-	if( abs(kdjEn.j - kdjEn.d) < minKdjCon and abs(kdjEn.d - kdjEn.k) < minKdjCon ):
+	if( abs(kdjEn.j - kdjEn.k) < minKdjCon and abs(kdjEn.k - kdjEn.d) < minKdjCon ):
 		return True
-	if( abs(kdjEn.j - kdjEn.d) < maxKdjCon and abs(kdjEn.d - kdjEn.k) < maxKdjCon ):
+	if( abs(kdjEn.j - kdjEn.k) < maxKdjCon and abs(kdjEn.k - kdjEn.d) < maxKdjCon ):
 		kdjEnAfter = kdjList[-2]
-		if( kdjEn.j - kdjEn.d < 0 and kdjEn.d - kdjEn.k < 0 and kdjEnAfter.j - kdjEnAfter.d > 0 and kdjEnAfter.d - kdjEnAfter.k > 0 ):
+		if( kdjEn.j - kdjEn.k < 0 and kdjEn.k - kdjEn.d < 0 and kdjEnAfter.j - kdjEnAfter.k > 0 and kdjEnAfter.k - kdjEnAfter.d > 0 ):
 			return True
 	return False
 	

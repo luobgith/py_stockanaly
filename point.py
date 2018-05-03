@@ -5,9 +5,7 @@ import utils
 release = True
 
 def point(fieldName, candleDict, kdjDict, capitalDict, data):
-	ifor = 8
-	#fokDif = 
-	
+	#ifor = 8
 	candEn = candleDict[fieldName][-1]
 	kdjFil = kdjDict[fieldName][-1]
 	#k上十字 入 5级
@@ -20,10 +18,25 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 	#k下十字 出 5级
 	if( (abs(candEn.popen - candEn.pclose) < 0.03) and ((max(candEn.pclose,candEn.popen) - candEn.plow) < 0.04) and (candEn.phigh - candEn.plow) / (float(data[1])*0.1) > 0.061 ):
 		if(kdjFil.k > 70 and kdjFil.d > 70 and kdjFil.j > 70):
-			print('+++Lev5:{0}:{1}'.format(fieldName, utils.objToString(candEn)))
+			print('---Lev5:{0}:{1}'.format(fieldName, utils.objToString(candEn)))
 			if(release):
 				utils.msgTips('Lev5:{0}:{1}'.format(fieldName, utils.objToString(candEn)), 'green')
 			return True
+			
+	#超买 以KDJ为基础再添加其他指标
+	if(utils.buyKdjCondition(kdjDict[fieldName])):
+		#三个蜡烛中有十字星
+		if( len( list( filter( lambda x: abs(x.pclose - x.popen) < 0.03, candleDict[fieldName][-3: ] ) ) ) > 0  ):
+			print('+++Lev1:{0}:{1}'.format(fieldName, utils.objToString(candEn)))
+		
+	
+	#超卖 以KDJ为基础再添加其他指标
+	if(utils.sellKdjCondition(kdjDict[fieldName])):
+		#三个蜡烛中有十字星
+		if( len( list( filter( lambda x: abs(x.pclose - x.popen) < 0.03, candleDict[fieldName][-3: ] ) ) ) > 0  ):
+			print('---Lev1:{0}:{1}'.format(fieldName, utils.objToString(candEn)))
+	
+	"""
 	#KDJ 入
 	if( abs(kdjFil.j - kdjFil.d) < ifor and  abs(kdjFil.d - kdjFil.k) < ifor ):
 		for kdjfor in kdjDict[fieldName][-ifor: ]:
@@ -43,5 +56,5 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 			print('Lev1::'+fieldName+'------------------')
 			utils.printObjVal(kdjFil)
 			print('------------------')
-			
+	"""		
 	

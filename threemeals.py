@@ -6,19 +6,19 @@ import stock, handledata
 if __name__=='__main__': 
 	conf = configparser.ConfigParser()
 	conf.read('config.conf')
-	threadList = []
+	#threadList = []
 	#stock
 	for stockCode in conf.get('stock', 'stockCodes').split(','):
 		t = threading.Thread(target=handledata.onlineStock, args=(stockCode,))
 		t.start()
 		print(stockCode, 'thread is starting...')
-		threadList.append(t)
+		#threadList.append(t)
 	#big pan data
 	for code in conf.get('stock', 'bigPanCodes').split(','):
 		t = threading.Thread(target=handledata.onlineBigpan, args=(code,))
 		print(code, 'thread is starting...')
 		t.start()
-		threadList.append(t)
+		#threadList.append(t)
 """		
 	for t in threadList:
 		t.join()

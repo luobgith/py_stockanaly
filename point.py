@@ -27,14 +27,14 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 	if(utils.buyKdjCondition(kdjDict[fieldName])):
 		#三个蜡烛中有十字星
 		if( len( list( filter( lambda x: abs(x.pclose - x.popen) < 0.03, candleDict[fieldName][-3: ] ) ) ) > 0  ):
-			print('+++Lev1:{0}:{1}'.format(fieldName, utils.objToString(candEn)))
+			print('+++Lev1:{0}:{1}'.format(fieldName, utils.objToString(kdjFil)))
 		
 	
 	#超卖 以KDJ为基础再添加其他指标
 	if(utils.sellKdjCondition(kdjDict[fieldName])):
 		#三个蜡烛中有十字星
 		if( len( list( filter( lambda x: abs(x.pclose - x.popen) < 0.03, candleDict[fieldName][-3: ] ) ) ) > 0  ):
-			print('---Lev1:{0}:{1}'.format(fieldName, utils.objToString(candEn)))
+			print('---Lev1:{0}:{1}'.format(fieldName, utils.objToString(kdjFil)))
 	
 	"""
 	#KDJ 入

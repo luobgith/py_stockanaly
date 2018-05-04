@@ -1,24 +1,27 @@
 # -*- coding: utf-8 -*-
 import configparser, time, threading
-import stock, handledata
+import handledata
 #from multiprocessing import Pool
 
 if __name__=='__main__': 
-	conf = configparser.ConfigParser()
-	conf.read('config.conf')
-	#threadList = []
+	#conf = configparser.ConfigParser()
+	#conf.read('config.conf')
+	handledata.onlineStock()
+"""	
 	#stock
 	for stockCode in conf.get('stock', 'stockCodes').split(','):
 		t = threading.Thread(target=handledata.onlineStock, args=(stockCode,))
 		t.start()
 		print(stockCode, 'thread is starting...')
-		#threadList.append(t)
+		time.sleep(0.5)
 	#big pan data
+
 	for code in conf.get('stock', 'bigPanCodes').split(','):
 		t = threading.Thread(target=handledata.onlineBigpan, args=(code,))
 		print(code, 'thread is starting...')
 		t.start()
-		#threadList.append(t)
+		time.sleep(2.5)
+	"""
 """		
 	for t in threadList:
 		t.join()

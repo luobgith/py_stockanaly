@@ -111,6 +111,12 @@ def getFilesByDir(dirPath, suffix = '.txt'):
 			if os.path.splitext(file)[1] == suffix:
 				resList.append(os.path.join(root, file))
 	return resList
+	
+#创建文件夹 dirPath：文件夹目录
+def mkdir(dirPath):
+	dirPath = dirPath.strip().rstrip('\\')	#去除尾部空格和\
+	if not os.path.exists(dirPath):
+		os.makedirs(dirPath)
 
 #比较两数大小,前一个数减后一个数，返回1 0 -1
 def conpareTowNum(num1, num2):
@@ -141,9 +147,7 @@ def sengMsgWeixin():
 	print(itchat.send('Hello, filehelper', toUserName='filehelper'))
 	
 if __name__=='__main__':
-	tmp = 1
-	if(tmp):
-		print('123')
+	mkdir('original\test\123\ ')
 		
 
 

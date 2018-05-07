@@ -36,6 +36,9 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 		if( len( list( filter( lambda x: abs(x.pclose - x.popen) < 0.03, candleDict[fieldName][-3: ] ) ) ) > 0  ):
 			print('---Lev1:{0}:{1}'.format(fieldName, utils.objToString(kdjFil)))
 	
+	#画图
+	utils.pltDrawKDJ(kdjDict['min5'])
+	
 	"""
 	#KDJ 入
 	if( abs(kdjFil.j - kdjFil.d) < ifor and  abs(kdjFil.d - kdjFil.k) < ifor ):

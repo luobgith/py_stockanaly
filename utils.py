@@ -2,6 +2,7 @@
 import os, threading, time
 from tkinter import *
 from datetime import datetime
+import matplotlib.pyplot as plt
 import stock
 
 #类的字段名
@@ -139,6 +140,40 @@ def sendMsgTkinter(msg, color):
 	text.insert(END,msg)
 	text.pack()
 	root.mainloop()
+#============画图=======
+#蜡烛
+def pltDraw(drawDataList):
+	x = []
+	y1 = []
+	y2 = []
+	for tmp in drawDataList:
+		x.append(tmp.ptime)
+		y1.append(float(tmp.popen))
+		y2.append(float(tmp.pclose))
+	plt.bar(y1,y2,color='g',width = .3,alpha=0.6,label='2015年')
+	plt.show()
+
+#kdj
+def pltDrawKDJ(kdjList):
+	x = []
+	y1 = []
+	y2 = []
+	y3 = []
+	for kdj in kdjList:
+		x.append(kdj.kdjtime)
+		y1.append(float(kdj.k))
+		y2.append(float(kdj.d))
+		y3.append(float(kdj.j))
+		
+	plt.title('k,d,j')	#添加标题
+	plt.axis([0, len(x), 0, 100])	#设置边界
+	#plt.grid(True)	#显示网格
+	
+	plt.plot(x,y1)
+	plt.plot(x,y2)
+	plt.plot(x,y3)
+	#plt.bar(y1,y2,color='g',width = .3,alpha=0.6,label='2015年')
+	plt.show()
 
 #####一下为测试函数，未使用
 #微信发送消息 不好用

@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-import os, threading, time
+import os, threading, time, pdb
 from tkinter import *
 from datetime import datetime
+from matplotlib.pylab import date2num
 import matplotlib.pyplot as plt
+import matplotlib.mpl_finance as mpf
 import stock
 
 #类的字段名
-objAttrTuple = ('phigh', 'plow', 'popen', 'pclose', 'pcounts', 'pmomey', 'ptime', 'cmoney', 'ccount', 'inorout', 'ctime', 'k', 'd', 'j', 'kdjtime', 'name')
+objAttrTuple = ('phigh', 'plow', 'popen', 'pclose', 'pcounts', 'pmomey', 'ptime', 'cmoney', 'ccount', 'inorout', 'ctime', 'k', 'd', 'j', 'kdjtime', 'name', 'pdate', 'kdjdate', 'cdate', 'date', 'time')
 #kdj的两个条件
 minKdjCon = 5
 maxKdjCon = 10
@@ -15,7 +17,7 @@ def getDataFilterMin(timeNow,mflag):
 	return lambda list: ( timeNow - datetime.strptime(list[31],'%H:%M:%S') ).seconds <= mflag*60
 	
 def getCapitalFilterMin(timeNow,mflag):
-	return lambda cap: ( timeNow - datetime.strptime(cap.ctime,'%H:%M:%S') ).seconds < mflag*60
+	return lambda cap: ( timeNow - datetime.strptime(cap.time,'%H:%M:%S') ).seconds < mflag*60
 
 #分钟K
 def candleMin(mflag, timeNow, dataList):
@@ -24,9 +26,9 @@ def candleMin(mflag, timeNow, dataList):
 	filtResList = list(filter(getDataFilterMin(timeNow, mflag),dataList[-mflag * 100: ]))
 	dataLast = filtResList[-1]
 	if(len(filtResList) > 1):
-		candle = stock.CandleEn(dataLast[0], float(filtResList[0][3]), float(filtResList[-2][3]), dataLast[31])
+		candle = stock.CandleEn(dataLast[0], float(filtResList[0][3]), float(filtResList[-2][3]), dataLast[30], dataLast[31])
 	else:
-		candle = stock.CandleEn(dataLast[0], float(filtResList[0][3]), float(filtResList[0][3]), dataLast[31])
+		candle = stock.CandleEn(dataLast[0], float(filtResList[0][3]), float(filtResList[0][3]), dataLast[30], dataLast[31])
 	candle.pcounts = ( int(filtResList[-1][8]) - int(filtResList[0][8]) )/100
 	candle.pmomey = ( float(filtResList[-1][9]) - float(filtResList[0][9]) )/10000
 	#排序
@@ -45,7 +47,7 @@ def kdjCalculate(candleList, kdjList):
 	rsvNow = ( float( candleList[-1].pclose ) - lowinkp ) / ( highinkp - lowinkp ) * 100
 	kvalue = ( rsvNow + 2*kdjList[-1].k ) / 3
 	dvalue = ( kvalue + 2*kdjList[-1].d ) / 3
-	return stock.KDJEn(candleList[-1].name, rsvNow, kvalue, dvalue, candleList[-1].ptime)
+	return stock.KDJEn(candleList[-1].name, rsvNow, kvalue, dvalue, candleList[-1].date, candleList[-1].time)
 
 #zi jing
 def capitalMin(mflag, timeNow, capitalList):
@@ -58,7 +60,7 @@ def capitalMin(mflag, timeNow, capitalList):
 		cmoney += cap.cmoney*cap.inorout
 	if(cmoney > 0):
 		inorout = 1
-	return stock.CapitalEn(capitalList[-1].name, ccount, cmoney, inorout, capitalList[-1].ctime)
+	return stock.CapitalEn(capitalList[-1].name, ccount, cmoney, inorout, capitalList[-1].date, capitalList[-1].time)
 
 #是否满足KDJ超买条件
 def buyKdjCondition(kdjList):
@@ -142,37 +144,106 @@ def sendMsgTkinter(msg, color):
 	root.mainloop()
 #============画图=======
 #蜡烛
-def pltDraw(drawDataList):
-	x = []
-	y1 = []
-	y2 = []
-	for tmp in drawDataList:
-		x.append(tmp.ptime)
-		y1.append(float(tmp.popen))
-		y2.append(float(tmp.pclose))
-	plt.bar(y1,y2,color='g',width = .3,alpha=0.6,label='2015年')
+def pltDrawCandle(candleList):
+	#mat_wdyx = [[736332.0, 54.01, 54.07, 54.11, 53.711, 30518.0, '002739'],[736333.0, 54.09, 56.691, 56.771, 53.831, 103953.0, '002739'],[736334.0, 56.302, 56.591, 57.08, 55.924, 65414.0, '002739']]
+	dataList = []
+	for can in candleList:
+		#datetime.strptime(can.ptime,'%H:%M:%S')
+		detail = []
+		"""
+		time = 1000*date2num(datetime.strptime(can.date +' '+ can.time,'%Y-%m-%d %H:%M:%S'))
+		if(len(dataList) > 0):
+			if(time - dataList[-1][0] > 55):
+				time = time - 55
+		"""
+		#time = 1000*date2num(datetime.strptime(can.time,'%H:%M:%S'))
+		tmp = can.time.split(':')
+		detail.append(int(tmp[0])*100+int(tmp[1]))
+		detail.append(can.popen)
+		detail.append(can.pclose)
+		detail.append(can.phigh)
+		detail.append(can.plow)
+		detail.append(333)
+		detail.append(can.date + can.time)
+		dataList.append(detail)
+		#print(detail)
+	return dataList
+	"""
+	#pdb.set_trace()
+	fig, ax = plt.subplots(figsize=(15,5))
+	fig.subplots_adjust(bottom=0.5)
+	mpf.candlestick_ochl(ax, dataList, width=0.6, colorup='r', colordown='g', alpha=1.0)
+	plt.grid(True)
+	# 设置日期刻度旋转的角度
+	plt.xticks(rotation=30)
+	plt.title('wanda yuanxian 17')
+	plt.xlabel('Date')
+	plt.ylabel('Price')
+	# x轴的刻度为日期
+	#ax.xaxis_date()
 	plt.show()
+	"""
 
 #kdj
-def pltDrawKDJ(kdjList):
-	x = []
-	y1 = []
-	y2 = []
-	y3 = []
+def pltDrawKDJ(kdjList, plt):
+	x,y1,y2,y3 = [],[],[],[]
+	#i = 1
 	for kdj in kdjList:
-		x.append(kdj.kdjtime)
+		#x.append(str(i)+kdj.time[0:5])
+		#time = 1000*date2num(datetime.strptime(kdj.time,'%H:%M:%S'))
+		x.append(kdj.time[0:5])
 		y1.append(float(kdj.k))
 		y2.append(float(kdj.d))
 		y3.append(float(kdj.j))
+		#i += 1
 		
-	plt.title('k,d,j')	#添加标题
+	#plt.title('k,d,j')	#添加标题
 	plt.axis([0, len(x), 0, 100])	#设置边界
-	#plt.grid(True)	#显示网格
+	plt.grid(True)	#显示网格
 	
 	plt.plot(x,y1)
 	plt.plot(x,y2)
 	plt.plot(x,y3)
+	plt.xticks(rotation=90)
+	#plt.show()
+	
+#zi jin
+def pltDrawCapital(capitalList, plt):
+	x, y1= [], []
+	#i = 1
+	for cap in capitalList:
+		#x.append(str(i)+cap.time[0:5])
+		#time = 1000*date2num(datetime.strptime(cap.time,'%H:%M:%S'))
+		x.append(cap.time[0:5])
+		y1.append(cap.cmoney/10000)
+		#i += 1
+		#plt.plot([])
+	#plt.title('zi jin')	#添加标题
+	plt.bar(x,y1,color='g',width =0.3,alpha=0.6)
 	#plt.bar(y1,y2,color='g',width = .3,alpha=0.6,label='2015年')
+	# 设置日期刻度旋转的角度 
+	plt.xlim(0, len(x))
+	plt.xticks(rotation=90)
+	plt.grid(True)
+	#plt.show()
+	
+#3幅图
+def pltMultiDraw(**kw):
+	candleList = kw.get('candleList')
+	kdjList = kw.get('kdjList')
+	capitalList = kw.get('capitalList')
+	#pdb.set_trace()
+	#fig, (ax1,ax2,ax3) = plt.subplots(nrows=3, ncols=1, sharex=True)
+	fig, (ax1,ax2,ax3) = plt.subplots(nrows=3, ncols=1)
+	fig.subplots_adjust(left=0.1, right=0.95, top=0.9, bottom=0.14, hspace=0.7)
+	plt.sca(ax1)
+	plt.grid(True)
+	mpf.candlestick_ochl(ax1, pltDrawCandle(candleList), width=0.6, colorup='r', colordown='g', alpha=1.0)
+	#plt.xlim(0, 100)
+	plt.sca(ax2)
+	pltDrawKDJ(kdjList, plt)
+	plt.sca(ax3)
+	pltDrawCapital(capitalList, plt)
 	plt.show()
 
 #####一下为测试函数，未使用

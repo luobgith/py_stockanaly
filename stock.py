@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 #类
 class CandleEn:
-	def __init__(self, name, popen, pclose, ptime, phigh=0, plow=0, pcounts=0, pmoney=0):
+	def __init__(self, name, popen, pclose, date, time, phigh=0, plow=0, pcounts=0, pmoney=0):
 		self.name = name
 		self.popen = popen
 		self.pclose = pclose
-		self.ptime = ptime
+		self.date = date
+		self.time = time
 		self.phigh = phigh
 		self.plow = plow
 		self.pcounts = pcounts
@@ -13,22 +14,24 @@ class CandleEn:
 
 #类
 class KDJEn:
-	def __init__(self, name, rsv, k=50, d=50, kdjtime='09:00:00'):
+	def __init__(self, name, rsv, k=50, d=50, date='2018-01-01', time='09:00:00'):
 		self.name = name
 		self.rsv = rsv
 		self.k = k
 		self.d = d
 		self.j = 3*k - 2*d
-		self.kdjtime = kdjtime
+		self.date = date
+		self.time = time
 
 #类
 class CapitalEn:
-	def __init__(self, name, ccount, cmoney, inorout, ctime):
+	def __init__(self, name, ccount, cmoney, inorout, date, time):
 		self.name = name
 		self.ccount = ccount
 		self.cmoney = cmoney
 		self.inorout = inorout
-		self.ctime = ctime
+		self.date = date
+		self.time = time
 		
 """
 蜡烛图: phigh plow popen pclose pcounts pmoney ptime

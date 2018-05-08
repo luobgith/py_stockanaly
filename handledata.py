@@ -3,6 +3,7 @@ import configparser, time, re, requests, csv, pdb, threading, os
 import stock, point, utils
 from datetime import datetime
 
+requests.adapters.DEFAULT_RETRIES = 5
 s = requests.session()
 s.keep_alive = False
 
@@ -17,12 +18,11 @@ dateToday = time.strftime('%Y%m%d')
 pattern = re.compile('"(.*)"')
 
 #线程变量
-localVal = threading.local()
+localVal = threading.local()	#未使用
 
 #全局变量
-morningTimeStart = '09:15:00'
-#afternoonTimeStart = '12:50:00'
-afternoonTimeEnd = '22:02:00'
+timeStart = '09:15:00'
+timeEnd = '15:02:00'
 minsDict = {}	#{"min1":1, "min3":3, "min5":5}
 candleDict = {}	##{"min1":[], "min3":[], "min5":[]}
 kdjDict = {}	##{"min1":[KDJEn(50), ], "min3":[KDJEn(50), ], "min5":[KDJEn(50), ]}
@@ -133,7 +133,7 @@ def init_h():
 	if(len(fileList) == 0 ):
 		return False
 	for fieldName,mflag in minsDict.items():
-		for filePath in fileList[-mflag: ]:
+		for filePath in fileList[-mflag-1: ]:
 			with open(filePath) as f:
 				reader = csv.reader(f)
 				for data in reader:
@@ -167,7 +167,7 @@ def dealOrigeData(data, **kw):
 	#capitalList = capitalOrigiDict[stockName]
 	if(len(origiList) == 0 ):
 		origiDict[stockName].append(data)
-		capitalOrigiDict[stockName].append( stock.CapitalEn(data[0], int(data[8]), float(data[9]), 0, data[31]) )
+		capitalOrigiDict[stockName].append( stock.CapitalEn(data[0], int(data[8]), float(data[9]), 0, data[30], data[31]) )
 		if(writer):
 			writer.writerow(data)
 	else:
@@ -175,7 +175,7 @@ def dealOrigeData(data, **kw):
 		if(doneDif > 0):
 			moneyDif = float(data[9])-float(origiList[-1][9])
 			inorout = utils.conpareTowNum(float(data[3]), moneyDif / doneDif)
-			capitalOrigiDict[stockName].append(stock.CapitalEn(data[0], doneDif, moneyDif, inorout, data[31]))
+			capitalOrigiDict[stockName].append(stock.CapitalEn(data[0], doneDif, moneyDif, inorout, data[30], data[31]))
 			origiDict[stockName].append(data)
 			if(writer):
 				writer.writerow(data)
@@ -188,8 +188,8 @@ def onlineStock():
 		#print(utils.objToString(tmp))
 	with open(originalDir + os.sep + 'stock' + os.sep + dateToday + '-stock.cvs', 'a', newline='') as f:
 		writer = csv.writer(f)
-		while( (nowTime > morningTimeStart) and ( nowTime < afternoonTimeEnd ) ):
-			#utils.pltDrawKDJ(kdjDict['min5'])
+		while( (nowTime > timeStart) and ( nowTime < timeEnd ) ):
+			
 			time.sleep(1.5)
 			contentList = pattern.findall((requests.get(url+'?list='+conf.get('stock', 'stockCodes'))).text)
 			for line in contentList:
@@ -198,6 +198,7 @@ def onlineStock():
 				dealOrigeData(data, writer = writer)
 				if(data[0] in pointNames):
 					analysisOrgiData(data[0])
+			nowTime = time.strftime('%H:%M:%S')
 			"""
 				data = line.split(',')
 				stockName = data[0]
@@ -240,7 +241,7 @@ def analysisOrgiData(pointName, **kw):
 					kdjDict[fieldName].append(utils.kdjCalculate(candleDict[fieldName], kdjDict[fieldName]))
 					#money in or out
 					capitalDict[fieldName].append(utils.capitalMin(mflag, timesup, capitalOrigiDict[pointName]))
-					print('{0}:{1}--{2}--{3}'.format(fieldName, utils.objToString(candleDict[fieldName][-1]), len(origiList), countFlag))
+					#print('{0}:{1}--{2}--{3}'.format(fieldName, utils.objToString(candleDict[fieldName][-1]), len(origiList), countFlag))
 					#选点
 					point.point(fieldName, candleDict, kdjDict, capitalDict, origiList[-1])
 
@@ -253,8 +254,8 @@ def onlineStock(stockCode):
 	nowTime = time.strftime('%H:%M:%S')
 	utils.mkdir(originalDir + stockCode)	#目录不存在则创建
 	with open(originalDir + stockCode + os.sep +stockCode + '-' + dateToday + '.txt', 'a') as f:
-		#while( (nowTime < morningTime) or ( nowTime < afternoonTimeEnd and nowTime > afternoonTimeStart) ):
-		while( (nowTime > morningTimeStart) and ( nowTime < afternoonTimeEnd ) ):
+		#while( (nowTime < morningTime) or ( nowTime < timeEnd and nowTime > afternoonTimeStart) ):
+		while( (nowTime > timeStart) and ( nowTime < timeEnd ) ):
 			time.sleep(1.5)
 			contents = (requests.get(url, params={'list' : stockCode})).text
 			analysisdata(contents, stockCode, f=f)
@@ -268,7 +269,7 @@ def onlineBigpan(stockCode):
 	nowTime = time.strftime('%H:%M:%S')
 	with open(originalDir + stockCode + os.sep +stockCode + '-' + dateToday + '.cvs', 'a', newline='') as f:
 		writer = csv.writer(f)
-		while( (nowTime > morningTimeStart) and ( nowTime < afternoonTimeEnd ) ):
+		while( (nowTime > timeStart) and ( nowTime < timeEnd ) ):
 			time.sleep(5)
 			contents = (requests.get(url, params={'list' : stockCode})).text
 			data = pattern.findall(contents.strip())[0].split(',')
@@ -282,7 +283,20 @@ def onlineBigpan(stockCode):
 					bigpanDataList.append(data)
 					writer.writerow(data)
 			nowTime = data[7]
-
-if __name__=='__main__': 
+			
+#通过日期选择数据
+def filterdate(x):
+	dateNow = '2018-05-08'
+	return x.date == dateNow
+			
+if __name__=='__main__':
+	#dateNow = '2018-05-08'
 	init_h()
+	utils.pltMultiDraw(candleList = filter(filterdate, candleDict['min5']), kdjList = filter(filterdate, kdjDict['min5']), capitalList = filter(filterdate, capitalDict['min5']))
+	utils.pltMultiDraw(candleList = filter(filterdate, candleDict['min3']), kdjList = filter(filterdate, kdjDict['min3']), capitalList = filter(filterdate, capitalDict['min3']))
+	utils.pltMultiDraw(candleList = filter(filterdate, candleDict['min1']), kdjList = filter(filterdate, kdjDict['min1']), capitalList = filter(filterdate, capitalDict['min1']))
+	#utils.pltDrawCandle(filter(lambda x : x.date == dateNow , candleDict['min5']))
+	#utils.pltDrawKDJ(filter(lambda x : x.date == dateNow , kdjDict['min5']))
+	#pdb.set_trace()
+	#utils.pltDrawCapital(filter(lambda x : x.date == dateNow , capitalDict['min5']))
 	

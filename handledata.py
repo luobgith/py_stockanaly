@@ -140,22 +140,6 @@ def init_h():
 					dealOrigeData(data)
 					if(data[0] in pointNames):
 						analysisOrgiData(data[0], fieldName = fieldName)
-				"""
-					stockName = data[0]
-					origiList = origiDict[stockName]
-					#capitalList = capitalOrigiDict[stockName]
-					if(len(origiList) == 0 ):
-						origiDict[stockName].append(data)
-						capitalOrigiDict[stockName].append( stock.CapitalEn(data[0], int(data[8]), float(data[9]), 0, data[31]) )
-					else:
-						doneDif = int(data[8]) - int(origiList[-1][8])
-						if(doneDif > 0):
-							moneyDif = float(data[9])-float(origiList[-1][9])
-							inorout = utils.conpareTowNum(float(data[3]), moneyDif / doneDif)
-							capitalOrigiDict[stockName].append(stock.CapitalEn(data[0], doneDif, moneyDif, inorout, data[31]))
-							origiDict[stockName].append(data)
-				"""
-					
 			init_origi()
 
 #处理原始数据
@@ -189,7 +173,6 @@ def onlineStock():
 	with open(originalDir + os.sep + 'stock' + os.sep + dateToday + '-stock.cvs', 'a', newline='') as f:
 		writer = csv.writer(f)
 		while( (nowTime > timeStart) and ( nowTime < timeEnd ) ):
-			
 			time.sleep(1.5)
 			contentList = pattern.findall((requests.get(url+'?list='+conf.get('stock', 'stockCodes'))).text)
 			for line in contentList:

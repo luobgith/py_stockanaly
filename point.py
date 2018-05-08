@@ -22,7 +22,22 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 			if(release):
 				utils.msgTips('Lev5:{0}:{1}'.format(fieldName, utils.objToString(candEn)), 'green')
 			return True
-			
+	
+	#5min 3min 同时超买
+	if(utils.buyKdjCondition(kdjDict[fieldName])):	#如果满足超卖
+		if(fieldName == 'min3'):	#如果是3分钟
+			if(utils.buyKdjCondition(kdjDict['min5'])): #则看5分钟的第一个是否满足
+				print('+++Lev2:{0}:{1}'.format(fieldName, utils.objToString(kdjFil)))
+		elif(fieldName == 'min5'):	#如果是5分钟
+			if(utils.buyKdjCondition(kdjDict['min3'])): #则看3分钟的第一个是否满足
+				print('+++Lev2:{0}:{1}'.format(fieldName, utils.objToString(kdjFil)))
+			elif(utils.buyKdjCondition(kdjDict['min3'][0:(len(kdjDict['min3'])-1)])): #则看3分钟的第二个是否满足
+				print('+++Lev2:{0}:{1}'.format(fieldName, utils.objToString(kdjFil)))
+				
+	#看数据用
+	if(fieldName == 'min5'):
+		print('{0}:{1}'.format(fieldName, utils.objToString(kdjFil)))
+	"""		
 	#超买 以KDJ为基础再添加其他指标
 	if(utils.buyKdjCondition(kdjDict[fieldName])):
 		#三个蜡烛中有十字星
@@ -35,7 +50,7 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 		#三个蜡烛中有十字星
 		if( len( list( filter( lambda x: abs(x.pclose - x.popen) < 0.03, candleDict[fieldName][-3: ] ) ) ) > 0  ):
 			print('---Lev1:{0}:{1}'.format(fieldName, utils.objToString(kdjFil)))
-	
+	"""
 	
 	"""
 	#KDJ 入

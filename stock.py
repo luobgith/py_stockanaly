@@ -20,6 +20,10 @@ class KDJEn:
 		self.k = k
 		self.d = d
 		self.j = 3*k - 2*d
+		if(self.j > 100):
+			self.j = 100
+		if(self.j < 0):
+			self.j = 0
 		self.date = date
 		self.time = time
 

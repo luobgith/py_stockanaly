@@ -10,7 +10,9 @@ if __name__=='__main__':
 	pointNames = handledata.pointNames
 	fileList = utils.getFilesByDir(originalDir + os.sep + 'stock', suffix = '.cvs')
 	handledata.init_origi()
-	for filePath in fileList:
+	#point.init(pointNames)
+	fileList.pop()
+	for filePath in fileList[-1: ]:
 		with open(filePath) as f:
 			reader = csv.reader(f)
 			for data in reader:

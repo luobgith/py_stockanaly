@@ -5,13 +5,15 @@ from datetime import datetime
 from matplotlib.pylab import date2num
 import matplotlib.pyplot as plt
 import matplotlib.mpl_finance as mpf
-import stock
+import stock, handledata
 
 #类的字段名
-objAttrTuple = ('phigh', 'plow', 'popen', 'pclose', 'pcounts', 'pmomey', 'ptime', 'cmoney', 'ccount', 'inorout', 'ctime', 'k', 'd', 'j', 'kdjtime', 'name', 'pdate', 'kdjdate', 'cdate', 'date', 'time')
+objAttrTuple = ('high', 'low', 'open', 'close', 'volume', 'pmomey', 'cmoney', 'ccount', 'inorout', 'k', 'd', 'j', 'name', 'kdjdate', 'date', 'time', 'm3', 'm5')
 #kdj的两个条件
 minKdjCon = 5
 maxKdjCon = 10
+#量平均线
+averas = handledata.maDict
 
 def getDataFilterMin(timeNow,mflag):
 	return lambda list: ( timeNow - datetime.strptime(list[31],'%H:%M:%S') ).seconds <= mflag*60
@@ -29,22 +31,22 @@ def candleMin(mflag, timeNow, dataList):
 		candle = stock.CandleEn(dataLast[0], float(filtResList[0][3]), float(filtResList[-2][3]), dataLast[30], dataLast[31])
 	else:
 		candle = stock.CandleEn(dataLast[0], float(filtResList[0][3]), float(filtResList[0][3]), dataLast[30], dataLast[31])
-	candle.pcounts = ( int(filtResList[-1][8]) - int(filtResList[0][8]) )/100
+	candle.volume = ( int(filtResList[-1][8]) - int(filtResList[0][8]) )/100
 	candle.pmomey = ( float(filtResList[-1][9]) - float(filtResList[0][9]) )/10000
 	#排序
 	sortList = sorted(filtResList, key=lambda x:x[3])
-	candle.phigh = float(sortList[-1][3])
-	candle.plow = float(sortList[0][3])
+	candle.high = float(sortList[-1][3])
+	candle.low = float(sortList[0][3])
 	return candle
 	
 #kdj
 def kdjCalculate(candleList, kdjList):
 	kp = 9	#kdj
-	lowinkp = float( (sorted(candleList[-kp: ], key=lambda x:x.plow))[0].plow )
-	highinkp = float( (sorted(candleList[-kp: ], key=lambda x:x.phigh))[-1].phigh )
+	lowinkp = float( (sorted(candleList[-kp: ], key=lambda x:x.low))[0].low )
+	highinkp = float( (sorted(candleList[-kp: ], key=lambda x:x.high))[-1].high )
 	if(highinkp == lowinkp):
 		highinkp = highinkp + 0.01
-	rsvNow = ( float( candleList[-1].pclose ) - lowinkp ) / ( highinkp - lowinkp ) * 100
+	rsvNow = ( float( candleList[-1].close ) - lowinkp ) / ( highinkp - lowinkp ) * 100
 	kvalue = ( rsvNow + 2*kdjList[-1].k ) / 3
 	dvalue = ( kvalue + 2*kdjList[-1].d ) / 3
 	return stock.KDJEn(candleList[-1].name, rsvNow, kvalue, dvalue, candleList[-1].date, candleList[-1].time)
@@ -54,13 +56,32 @@ def capitalMin(mflag, timeNow, capitalList):
 	if(mflag > 60 or mflag < 0 ):
 		raise ValueError('input value must be 0< mflag <60.')
 	filtResList = list(filter(getCapitalFilterMin(timeNow, mflag),capitalList[-mflag * 100: ]))
-	ccount, cmoney, inorout = 0,0,-1
+	ccount, cmoney, inorout = 0,0,0
 	for cap in filtResList:
-		ccount += cap.ccount*cap.inorout
-		cmoney += cap.cmoney*cap.inorout
-	if(cmoney > 0):
-		inorout = 1
+		#ccount += cap.ccount*cap.inorout
+		#cmoney += cap.cmoney*cap.inorout
+		ccount += cap.ccount
+		cmoney += cap.cmoney
+	#if(cmoney > 0):
+		#inorout = 1
 	return stock.CapitalEn(capitalList[-1].name, ccount, cmoney, inorout, capitalList[-1].date, capitalList[-1].time)
+	
+#平均线3 5
+def calAverageCapital(captialList):
+	#averas = {'m3':3, 'm5':5}
+	captLen = len(captialList)
+	#pdb.set_trace()
+	if(captLen == 0):
+		return False
+	for avername, num in averas.items():
+		if(captLen < num):
+			num = captLen
+		calList = captialList[-num: ]
+		averaCount = 0
+		for cap in calList:
+			averaCount += cap.ccount
+		setattr(captialList[-1], avername, averaCount/num)
+		
 
 #是否满足KDJ超买条件
 def buyKdjCondition(kdjList):
@@ -90,9 +111,8 @@ def sellKdjCondition(kdjList):
 			return True
 	return False
 	
-#输出类字段及值（需要把字段配在这里）
+#输出类字段及值
 def printObjVal(obj):
-	#objAttrTuple = ('name', 'phigh', 'plow', 'popen', 'pclose', 'pcounts', 'pmomey', 'ptime', 'cmoney', 'ccount', 'inorout', 'ctime', 'k', 'd', 'j', 'kdjtime')
 	for attr in objAttrTuple:
 		if( hasattr(obj, attr) ):
 			print(attr, '=', getattr(obj, attr), end=' | ')
@@ -159,10 +179,10 @@ def pltDrawCandle(candleList):
 		#time = 1000*date2num(datetime.strptime(can.time,'%H:%M:%S'))
 		tmp = can.time.split(':')
 		detail.append(int(tmp[0])*100+int(tmp[1]))
-		detail.append(can.popen)
-		detail.append(can.pclose)
-		detail.append(can.phigh)
-		detail.append(can.plow)
+		detail.append(can.open)
+		detail.append(can.close)
+		detail.append(can.high)
+		detail.append(can.low)
 		detail.append(333)
 		detail.append(can.date + can.time)
 		dataList.append(detail)
@@ -207,21 +227,26 @@ def pltDrawKDJ(kdjList, plt):
 	plt.xticks(rotation=90)
 	#plt.show()
 	
-#zi jin
+#liang 
 def pltDrawCapital(capitalList, plt):
-	x, y1= [], []
+	x, y1, y2, y3 = [], [], [], []
 	#i = 1
 	for cap in capitalList:
 		#x.append(str(i)+cap.time[0:5])
 		#time = 1000*date2num(datetime.strptime(cap.time,'%H:%M:%S'))
 		x.append(cap.time[0:5])
-		y1.append(cap.cmoney/10000)
+		#y1.append(cap.cmoney/10000)
+		y1.append(cap.ccount/100)
+		y2.append(cap.m5/100)
+		y3.append(cap.m10/100)
 		#i += 1
 		#plt.plot([])
 	#plt.title('zi jin')	#添加标题
 	plt.bar(x,y1,color='g',width =0.3,alpha=0.6)
 	#plt.bar(y1,y2,color='g',width = .3,alpha=0.6,label='2015年')
 	# 设置日期刻度旋转的角度 
+	plt.plot(x,y2)
+	plt.plot(x,y3)
 	plt.xlim(0, len(x))
 	plt.xticks(rotation=90)
 	plt.grid(True)

@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 #类
 class CandleEn:
-	def __init__(self, name, popen, pclose, date, time, phigh=0, plow=0, pcounts=0, pmoney=0):
+	def __init__(self, name, open, close, date, time, high=0, low=0, volume=0, pmoney=0):
 		self.name = name
-		self.popen = popen
-		self.pclose = pclose
+		self.open = open
+		self.close = close
 		self.date = date
 		self.time = time
-		self.phigh = phigh
-		self.plow = plow
-		self.pcounts = pcounts
+		self.high = high
+		self.low = low
+		self.volume = volume
 		self.pmoney = pmoney
 
 #类
@@ -36,9 +36,11 @@ class CapitalEn:
 		self.inorout = inorout
 		self.date = date
 		self.time = time
+		self.m5 = None
+		self.m10 = None
 		
 """
-蜡烛图: phigh plow popen pclose pcounts pmoney ptime
+蜡烛图: high low open close volume pmoney ptime
 
 资金: cmoney ccount inorout ctime
 

@@ -11,6 +11,7 @@ if __name__=='__main__':
 	fileList = utils.getFilesByDir(originalDir + os.sep + 'stock', suffix = '.cvs')
 	handledata.init_origi()
 	#point.init(pointNames)
+	#fileList.pop()
 	fileList.pop()
 	for filePath in fileList[-1: ]:
 		with open(filePath) as f:

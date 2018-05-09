@@ -4,6 +4,7 @@ import utils
 #全局变量True False
 release = False
 #成交量固定指标
+volumeFlag = 100000
 """
 volumeStand = {'浪潮信息':{'min5':0.00009, 'min3':0.0008}, '赣锋锂业':{'min5':0.0005, 'min3':0.0008}}
 #baseVal = 100000000
@@ -55,15 +56,18 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 					utils.msgTips(str, 'red')
 					
 	#成交量 出 5下交10
-	if(len(capitalDict[fieldName]) > 1):
+	if(kdjEn.k > 75 and kdjEn.d > 70 and kdjEn.j > 80):
 		str = 'Lev4:{0}:{1}:price={2}'.format(fieldName, utils.objToString(kdjEn), candEn.close)
 		capEn2 = capitalDict[fieldName][-2]
-		if( capEn.m5 - capEn.m10 < 0 and capEn2.m5 - capEn2.m10 > 10):
-			if(kdjEn.k > 75 and kdjEn.d > 70 and kdjEn.j > 80):
+		if(capEn.m5 - capEn2.m5 < -volumeFlag):
+			if(abs(capEn.m5 - capEn.m10)/capEn.m5 < 0.01):
 				print('---'+str)
 				if(release):
-					utils.msgTips(str, 'green')
-				
+					utils.msgTips(str, 'red')
+			elif( capEn.m5 - capEn.m10 < 0 and capEn2.m5 - capEn2.m10 > 0 ):
+				print('---'+str)
+				if(release):
+					utils.msgTips(str, 'red')
 	#看数据用
 	#if(fieldName == 'min5'):
 		#print('{0}:{1}'.format(fieldName, utils.objToString(capEn)))

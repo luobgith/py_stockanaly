@@ -202,7 +202,6 @@ def analysisOrgiData(pointName, **kw):
 #网络获取数据
 def onlineStock():
 	init_h()
-	
 	nowTime = time.strftime('%H:%M:%S')
 	#for tmp in capitalDict['min5']:
 		#print(utils.objToString(tmp))
@@ -263,13 +262,10 @@ def filterdate(x):
 	return x.date == dateNow
 			
 if __name__=='__main__':
-	#dateNow = '2018-05-08'
 	init_h()
 	utils.pltMultiDraw(candleList = filter(filterdate, candleDict['min5']), kdjList = filter(filterdate, kdjDict['min5']), capitalList = filter(filterdate, capitalDict['min5']))
 	utils.pltMultiDraw(candleList = filter(filterdate, candleDict['min3']), kdjList = filter(filterdate, kdjDict['min3']), capitalList = filter(filterdate, capitalDict['min3']))
 	utils.pltMultiDraw(candleList = filter(filterdate, candleDict['min1']), kdjList = filter(filterdate, kdjDict['min1']), capitalList = filter(filterdate, capitalDict['min1']))
-	#utils.pltDrawCandle(filter(lambda x : x.date == dateNow , candleDict['min5']))
-	#utils.pltDrawKDJ(filter(lambda x : x.date == dateNow , kdjDict['min5']))
 	#pdb.set_trace()
 	#utils.pltDrawCapital(filter(lambda x : x.date == dateNow , capitalDict['min5']))
 	

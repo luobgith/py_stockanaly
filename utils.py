@@ -8,12 +8,13 @@ import matplotlib.mpl_finance as mpf
 import stock, handledata
 
 #类的字段名
-objAttrTuple = ('high', 'low', 'open', 'close', 'volume', 'pmomey', 'cmoney', 'ccount', 'inorout', 'k', 'd', 'j', 'name', 'kdjdate', 'date', 'time', 'm3', 'm5')
+objAttrTuple = ('high', 'low', 'open', 'close', 'volume', 'pmomey', 'cmoney', 'ccount', 'inorout', 'k', 'd', 'j', 'name', 'kdjdate', 'date', 'time', 'm10', 'm5')
 #kdj的两个条件
 minKdjCon = 5
 maxKdjCon = 10
 #量平均线
-averas = handledata.maDict
+#averas = handledata.maDict
+averas = {'m5':5,'m10':10}
 
 def getDataFilterMin(timeNow,mflag):
 	return lambda list: ( timeNow - datetime.strptime(list[31],'%H:%M:%S') ).seconds <= mflag*60

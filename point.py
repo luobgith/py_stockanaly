@@ -2,7 +2,7 @@
 import utils
 
 #全局变量True False
-release = False
+release = True
 #成交量固定指标
 volumeFlag = 100000
 """

@@ -39,7 +39,7 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 	
 	#5min 3min 同时超买
 	if(utils.buyKdjCondition(kdjDict[fieldName])):	#如果满足超卖
-		str = 'Lev3:{0}:{1}:price={2}'.format(fieldName, utils.objToString(kdjEn), candEn.close)
+		str = 'Lev2:{0}:{1}:price={2}'.format(fieldName, utils.objToString(kdjEn), candEn.close)
 		if(fieldName == 'min3'):	#如果是3分钟
 			if(utils.buyKdjCondition(kdjDict['min5'])): #则看5分钟的第一个是否满足
 				print('+++'+str)
@@ -63,11 +63,11 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 			if(abs(capEn.m5 - capEn.m10)/capEn.m5 < 0.01):
 				print('---'+str)
 				if(release):
-					utils.msgTips(str, 'red')
+					utils.msgTips(str, 'green')
 			elif( capEn.m5 - capEn.m10 < 0 and capEn2.m5 - capEn2.m10 > 0 ):
 				print('---'+str)
 				if(release):
-					utils.msgTips(str, 'red')
+					utils.msgTips(str, 'green')
 	#看数据用
 	#if(fieldName == 'min5'):
 		#print('{0}:{1}'.format(fieldName, utils.objToString(capEn)))

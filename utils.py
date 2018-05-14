@@ -279,7 +279,7 @@ def sengMsgWeixin():
 	print(itchat.send('Hello, filehelper', toUserName='filehelper'))
 	
 if __name__=='__main__':
-	mkdir('original\test\123\ ')
+	print(handledata.maDict)
 		
 
 

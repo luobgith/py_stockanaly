@@ -5,6 +5,7 @@ import utils
 release = True
 #成交量固定指标
 volumeFlag = 100000
+volumeFlagTotal = 250000
 """
 volumeStand = {'浪潮信息':{'min5':0.00009, 'min3':0.0008}, '赣锋锂业':{'min5':0.0005, 'min3':0.0008}}
 #baseVal = 100000000
@@ -55,10 +56,12 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 				if(release):
 					utils.msgTips(str, 'red')
 					
-	#成交量 出 5下交10
+	#成交量 出 
 	if(kdjEn.k > 75 and kdjEn.d > 70 and kdjEn.j > 80):
 		str = 'Lev4:{0}:{1}:price={2}'.format(fieldName, utils.objToString(kdjEn), candEn.close)
 		capEn2 = capitalDict[fieldName][-2]
+		capEn3 = capitalDict[fieldName][-3]
+		#5下交10
 		if(capEn.m5 - capEn2.m5 < -volumeFlag):
 			if(abs(capEn.m5 - capEn.m10)/capEn.m5 < 0.01):
 				print('---'+str)
@@ -68,6 +71,16 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 				print('---'+str)
 				if(release):
 					utils.msgTips(str, 'green')
+			elif( capEn2.m5 - capEn3.m5 > 0 and abs(capEn2.m5 - capEn3.m5) + abs(capEn.m5 - capEn2.m5) > volumeFlagTotal):	##正负夹角
+				print('---'+str)
+				if(release):
+					utils.msgTips(str, 'green')
+		#正负夹角
+		if( capEn3.m5 - capEn.m5 < -(2*volumeFlag) and abs(capEn3.m5 - capEn.m5) + (capitalDict[fieldName][-3] - capitalDict[fieldName][-5]) > 2*volumeFlagTotal ):
+			print('---'+str)
+				if(release):
+					utils.msgTips(str, 'green')
+		
 	#看数据用
 	#if(fieldName == 'min5'):
 		#print('{0}:{1}'.format(fieldName, utils.objToString(capEn)))

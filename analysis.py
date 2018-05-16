@@ -8,11 +8,11 @@ if __name__=='__main__':
 	#originalDir = conf.get('stock', 'originalDir')
 	originalDir = handledata.originalDir
 	pointNames = handledata.pointNames
-	fileList = utils.getFilesByDir(originalDir + os.sep + 'stock', suffix = '.cvs')
+	fileList = utils.getFilesByDir(originalDir + os.sep + 'stock', suffix = '.csv')
 	handledata.init_origi()
 	#point.init(pointNames)
 	#fileList.pop()
-	fileList.pop()
+	#fileList.pop()
 	for filePath in fileList[-1: ]:
 		with open(filePath) as f:
 			reader = csv.reader(f)

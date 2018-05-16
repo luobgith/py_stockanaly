@@ -5,7 +5,7 @@ from datetime import datetime
 from matplotlib.pylab import date2num
 import matplotlib.pyplot as plt
 import matplotlib.mpl_finance as mpf
-import stock, handledata
+import stock
 
 #类的字段名
 objAttrTuple = ('high', 'low', 'open', 'close', 'volume', 'pmomey', 'cmoney', 'ccount', 'inorout', 'k', 'd', 'j', 'name', 'kdjdate', 'date', 'time', 'm10', 'm5')
@@ -13,7 +13,6 @@ objAttrTuple = ('high', 'low', 'open', 'close', 'volume', 'pmomey', 'cmoney', 'c
 minKdjCon = 5
 maxKdjCon = 10
 #量平均线
-#averas = handledata.maDict
 averas = {'m5':5,'m10':10}
 
 def getDataFilterMin(timeNow,mflag):
@@ -59,15 +58,12 @@ def capitalMin(mflag, timeNow, capitalList):
 	filtResList = list(filter(getCapitalFilterMin(timeNow, mflag),capitalList[-mflag * 100: ]))
 	ccount, cmoney, inorout = 0,0,0
 	for cap in filtResList:
-		#ccount += cap.ccount*cap.inorout
-		#cmoney += cap.cmoney*cap.inorout
+		inorout +=  cap.ccount * cap.inorout
 		ccount += cap.ccount
 		cmoney += cap.cmoney
-	#if(cmoney > 0):
-		#inorout = 1
 	return stock.CapitalEn(capitalList[-1].name, ccount, cmoney, inorout, capitalList[-1].date, capitalList[-1].time)
 	
-#平均线3 5
+#量平均线
 def calAverageCapital(captialList):
 	#averas = {'m3':3, 'm5':5}
 	captLen = len(captialList)
@@ -83,7 +79,6 @@ def calAverageCapital(captialList):
 			averaCount += cap.ccount
 		setattr(captialList[-1], avername, averaCount/num)
 		
-
 #是否满足KDJ超买条件
 def buyKdjCondition(kdjList):
 	buyCon = 30
@@ -111,6 +106,19 @@ def sellKdjCondition(kdjList):
 		if( kdjEn.j - kdjEn.k < 0 and kdjEn.k - kdjEn.d < 0 and kdjEnAfter.j - kdjEnAfter.k > 0 and kdjEnAfter.k - kdjEnAfter.d > 0 ):
 			return True
 	return False
+	
+#判断inorout
+def judgeInorout(data, junjia):
+	#inorout = 0
+	#dangqian = float(data[3])
+	inorout = conpareTowNum(float(data[3]), junjia)
+	if(inorout == 0):
+		#pdb.set_trace()
+		if(junjia == float(data[6])):
+			inorout = -1
+		elif(junjia == float(data[7])):
+			inorout = 1
+	return inorout	
 	
 #输出类字段及值
 def printObjVal(obj):
@@ -230,20 +238,16 @@ def pltDrawKDJ(kdjList, plt):
 	
 #liang 
 def pltDrawCapital(capitalList, plt):
-	x, y1, y2, y3 = [], [], [], []
-	#i = 1
+	x, y1, y2, y3, y4 = [], [], [], [], []
 	for cap in capitalList:
-		#x.append(str(i)+cap.time[0:5])
-		#time = 1000*date2num(datetime.strptime(cap.time,'%H:%M:%S'))
 		x.append(cap.time[0:5])
-		#y1.append(cap.cmoney/10000)
 		y1.append(cap.ccount/100)
 		y2.append(cap.m5/100)
 		y3.append(cap.m10/100)
-		#i += 1
-		#plt.plot([])
+		y4.append(cap.inorout/100)
 	#plt.title('zi jin')	#添加标题
-	plt.bar(x,y1,color='g',width =0.3,alpha=0.6)
+	#plt.bar(x,y1,color='g',width =0.3,alpha=0.6)
+	plt.bar(x,y4,color='r',width =0.3,alpha=0.6)
 	#plt.bar(y1,y2,color='g',width = .3,alpha=0.6,label='2015年')
 	# 设置日期刻度旋转的角度 
 	plt.plot(x,y2)
@@ -279,7 +283,7 @@ def sengMsgWeixin():
 	print(itchat.send('Hello, filehelper', toUserName='filehelper'))
 	
 if __name__=='__main__':
-	print(handledata.maDict)
+	print(maDict)
 		
 
 

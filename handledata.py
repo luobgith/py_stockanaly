@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import configparser, time, re, requests, csv, pdb, threading, os
-import stock, point, utils
+import stock, point, utils, config
 from datetime import datetime
 
 requests.adapters.DEFAULT_RETRIES = 5
@@ -8,12 +8,12 @@ s = requests.session()
 s.keep_alive = False
 
 #配置文件变量
-conf = configparser.ConfigParser()
-conf.read('config.conf', encoding='utf-8-sig')
-url = conf.get('net', 'url')
-originalDir = conf.get('stock', 'originalDir')
-#stockPoint = conf.get('stock', 'stockPoint')
-pointNames = conf.get('stock', 'pointNames')
+#conf = configparser.ConfigParser()
+#conf.read('config.conf', encoding='utf-8-sig')
+url = config.url
+stockCodes = config.stockCodes
+originalDir = config.originalDir
+pointNames = config.pointNames
 dateToday = time.strftime('%Y%m%d')
 pattern = re.compile('"(.*)"')
 
@@ -22,27 +22,29 @@ localVal = threading.local()	#未使用
 
 #全局变量
 timeStart = '09:10:00'
-timeEnd = '15:02:00'
+timeEnd = '11:32:00'
+timeStart2 = '12:35:00'
+timeEnd2 = '15:02:00'
 minsDict = {}	#{"min1":1, "min3":3, "min5":5}
-maDict = {}	#{"m5":5, "m7":7, "m10":10}
 candleDict = {}	##{"min1":[], "min3":[], "min5":[]}
 kdjDict = {}	##{"min1":[KDJEn(50), ], "min3":[KDJEn(50), ], "min5":[KDJEn(50), ]}
 capitalDict = {}	###{"min1":[], "min3":[], "min5":[]}
-for min in conf.get('stock', 'minPoints').split(','):
+for min in config.minPoints.split(','):
 	minsDict[min] = int(min[-1])
 	candleDict[min] = []
 	kdjDict[min] = [stock.KDJEn('', 50), ]
 	capitalDict[min] = []
-for ma in conf.get('stock', 'maPoints').split(','):
+"""
+for ma in maPoints.split(','):
 	maDict[ma] = int(ma[1: ])
+"""
 
-#======第二版
 countFlag = 1	#全局计数变量
 origiDict = {}
 capitalOrigiDict = {}
 def init_origi():
 	global countFlag
-	for stockName in conf.get('stock', 'stockNames').split(','):
+	for stockName in config.stockNames.split(','):
 		origiDict[stockName] = []
 		capitalOrigiDict[stockName] = []
 		countFlag = 1
@@ -79,11 +81,11 @@ def dealOrigeData(data, **kw):
 	else:
 		doneDif = int(data[8]) - int(origiList[-1][8])
 		if(doneDif > 0):
-			#if(doneDif > 150000 and data[0] in pointNames):
-				#print('Volume:{0}--Time:{1}'.format(str(doneDif/100), data[31]))
 			moneyDif = float(data[9])-float(origiList[-1][9])
 			#inorout = utils.conpareTowNum(float(data[3]), moneyDif / doneDif)
 			inorout = utils.judgeInorout(data, moneyDif / doneDif)
+			if(doneDif > 150000 and data[0] in pointNames and config.release):
+				print('Volume:{0}--Time:{1}'.format(inorout*doneDif/100, data[31]))
 			capitalOrigiDict[stockName].append(stock.CapitalEn(data[0], doneDif, moneyDif, inorout, data[30], data[31]))
 			origiDict[stockName].append(data)
 			if(writer):
@@ -106,7 +108,7 @@ def analysisOrgiData(pointName, **kw):
 				capitalDict[fieldName].append(utils.capitalMin(mflag, timesup, capitalOrigiDict[pointName]))
 				utils.calAverageCapital(capitalDict[fieldName])
 				#选点
-				point.point(fieldName, candleDict, kdjDict, capitalDict, origiList[-1])
+				#point.point(fieldName, candleDict, kdjDict, capitalDict, origiList[-1])
 		else:
 			#print( utils.printObjVal(capitalOrigiDict[pointName][-1]) )
 			for fieldName,mflag in minsDict.items():
@@ -128,10 +130,10 @@ def onlineStock():
 	nowTime = time.strftime('%H:%M:%S')
 	with open(originalDir + os.sep + 'stock' + os.sep + dateToday + '-stock.csv', 'a', newline='') as f:
 		writer = csv.writer(f)
-		while( (nowTime > timeStart) and ( nowTime < timeEnd ) ):
+		while( (nowTime > timeStart and nowTime < timeEnd) or (nowTime > timeStart2 and nowTime < timeEnd2) ):
 			time.sleep(1.8)
 			try:
-				contentList = pattern.findall((requests.get(url+'?list='+conf.get('stock', 'stockCodes'))).text)
+				contentList = pattern.findall((requests.get(url+'?list='+stockCodes)).text)
 			except ValueError as e:
 				print(e)
 				utils.msgTips('网络出错！！！', 'red')
@@ -142,22 +144,6 @@ def onlineStock():
 				if(data[0] in pointNames):
 					analysisOrgiData(data[0])
 			nowTime = time.strftime('%H:%M:%S')
-"""
-#网络获取数据
-def onlineStock(stockCode):
-	init_t(stockCode)
-	if(stockCode in stockPoint):
-		init_d(stockCode)
-	nowTime = time.strftime('%H:%M:%S')
-	utils.mkdir(originalDir + stockCode)	#目录不存在则创建
-	with open(originalDir + stockCode + os.sep +stockCode + '-' + dateToday + '.txt', 'a') as f:
-		#while( (nowTime < morningTime) or ( nowTime < timeEnd and nowTime > afternoonTimeStart) ):
-		while( (nowTime > timeStart) and ( nowTime < timeEnd ) ):
-			time.sleep(1.5)
-			contents = (requests.get(url, params={'list' : stockCode})).text
-			analysisdata(contents, stockCode, f=f)
-			nowTime = time.strftime('%H:%M:%S')
-"""	
 		
 #big 盘
 def onlineBigpan(stockCode):

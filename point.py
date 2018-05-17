@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-import utils
+import config, utils
 
 #全局变量True False
-release = False
+release = config.release
 #成交量固定指标
 volumeFlag = 100000
 volumeFlagTotal = 250000
@@ -97,5 +97,6 @@ def point(fieldName, candleDict, kdjDict, capitalDict, data):
 	#看数据用
 	#if(fieldName == 'min5'):
 		#print('{0}:{1}'.format(fieldName, utils.objToString(capEn)))
+	#print('{0}:{1}'.format(fieldName, utils.objToString(capEn)))
 	
 	

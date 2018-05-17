@@ -5,7 +5,7 @@ from datetime import datetime
 from matplotlib.pylab import date2num
 import matplotlib.pyplot as plt
 import matplotlib.mpl_finance as mpf
-import stock
+import stock, config
 
 #类的字段名
 objAttrTuple = ('high', 'low', 'open', 'close', 'volume', 'pmomey', 'cmoney', 'ccount', 'inorout', 'k', 'd', 'j', 'name', 'kdjdate', 'date', 'time', 'm10', 'm5')
@@ -13,7 +13,9 @@ objAttrTuple = ('high', 'low', 'open', 'close', 'volume', 'pmomey', 'cmoney', 'c
 minKdjCon = 5
 maxKdjCon = 10
 #量平均线
-averas = {'m5':5,'m10':10}
+#averas = {'m5':5,'m10':10}
+#averas = config.maPoints
+maDict = {'m5':5,'m10':10}
 
 def getDataFilterMin(timeNow,mflag):
 	return lambda list: ( timeNow - datetime.strptime(list[31],'%H:%M:%S') ).seconds <= mflag*60
@@ -65,12 +67,11 @@ def capitalMin(mflag, timeNow, capitalList):
 	
 #量平均线
 def calAverageCapital(captialList):
-	#averas = {'m3':3, 'm5':5}
 	captLen = len(captialList)
 	#pdb.set_trace()
 	if(captLen == 0):
 		return False
-	for avername, num in averas.items():
+	for avername, num in maDict.items():
 		if(captLen < num):
 			num = captLen
 		calList = captialList[-num: ]
@@ -283,7 +284,9 @@ def sengMsgWeixin():
 	print(itchat.send('Hello, filehelper', toUserName='filehelper'))
 	
 if __name__=='__main__':
-	print(maDict)
+	#print(maDict)
+	for i in range(3):
+		print(i)
 		
 
 

@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
-import utils, handledata
+import utils, handledata, config
 import configparser, time, pdb, threading, os, csv
 
 if __name__=='__main__':
 	#conf = configparser.ConfigParser()
 	#conf.read('config.conf')
 	#originalDir = conf.get('stock', 'originalDir')
-	originalDir = handledata.originalDir
-	pointNames = handledata.pointNames
-	fileList = utils.getFilesByDir(originalDir + os.sep + 'stock', suffix = '.csv')
+	#originalDir = config.originalDir
+	#pointNames = config.pointNames
+	fileList = utils.getFilesByDir(config.originalDir + os.sep + 'stock', suffix = '.csv')
 	handledata.init_origi()
-	#point.init(pointNames)
 	#fileList.pop()
 	#fileList.pop()
 	for filePath in fileList[-1: ]:
@@ -18,7 +17,7 @@ if __name__=='__main__':
 			reader = csv.reader(f)
 			for data in reader:
 				handledata.dealOrigeData(data)
-				if(data[0] in pointNames):
+				if(data[0] in config.pointNames):
 					handledata.analysisOrgiData(data[0])
 		handledata.init_origi()
 	"""

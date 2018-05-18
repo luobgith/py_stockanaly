@@ -8,7 +8,7 @@ import matplotlib.mpl_finance as mpf
 import stock, config
 
 #类的字段名
-objAttrTuple = ('high', 'low', 'open', 'close', 'volume', 'pmomey', 'cmoney', 'ccount', 'inorout', 'k', 'd', 'j', 'name', 'kdjdate', 'date', 'time', 'm10', 'm5')
+objAttrTuple = config.objAttrTuple
 #kdj的两个条件
 minKdjCon = 5
 maxKdjCon = 10

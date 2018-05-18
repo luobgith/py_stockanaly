@@ -38,6 +38,24 @@ class CapitalEn:
 		self.time = time
 		self.m5 = None
 		self.m10 = None
+
+class CaiWuEn:
+	def __init__(self, name, code, pe=0, pb=0, BasicEPS=0, NetAssetPerShare=0, mainBusinessIncome=0, IncomeYOYRate=0, retainedProfits=0, ProfitsYOYRate=0, CashFlowPerShare=0, WeightedYieldOnNetAssets=0, SalesGrossMargin=0, totalCapital=0, CirculaValue=0):
+		self.name = name
+		self.code = code
+		self.pe = pe	#市盈率
+		self.pb = pb	#市净率
+		self.BasicEPS = BasicEPS	#基本每股收益(元)
+		self.NetAssetPerShare = NetAssetPerShare	#每股净资产(元)
+		self.mainBusinessIncome = mainBusinessIncome	#总营收(万)
+		self.IncomeYOYRate = IncomeYOYRate	#营收同比率(%)
+		self.retainedProfits = retainedProfits	#净利润(万)
+		self.ProfitsYOYRate = ProfitsYOYRate	#净利润同比(%)
+		self.CashFlowPerShare = CashFlowPerShare	#每股现金流(元)
+		self.WeightedYieldOnNetAssets = WeightedYieldOnNetAssets	#ROE(%)
+		self.SalesGrossMargin = SalesGrossMargin	#毛利率(%)
+		self.totalCapital = totalCapital	#总市值
+		self.CirculaValue = CirculaValue	#流通市值
 		
 """
 蜡烛图: high low open close volume pmoney ptime

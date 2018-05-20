@@ -69,16 +69,19 @@ def catchStockCaiWu(code):
 	if(code[0] == '6'):
 		codeFalg2 = 'SH'
 	zc = json.loads(pattern.findall(requests.get(urlzc.format(code, codeFalg1)).text)[0])['Value']
+	#print(zc)
+	if(len(zc) < 1):
+		return None
 	peValue = -1000
 	pbValue = -1000
 	try:
-		print(code)
 		peValue = float(zc[38])
 		pbValue = float(zc[43])
 	except ValueError as e:
 		pass
 	caiWu = stock.CaiWuEn(zc[2], code, CirculaValue=float(zc[45]), totalCapital=float(zc[46]), pe=peValue, pb=pbValue)
-	cwzy = json.loads(requests.get(urlcwzy.format(code, codeFalg2)).text)[0]
+	#cwzy = json.loads(requests.get(urlcwzy.format(code, codeFalg2)).text)[0]
+	cwzy = (requests.get(urlcwzy.format(code, codeFalg2)).json())[0]
 	for attr in config.objAttrTuple:
 		if(attr in cwzy):
 			value = -1000
@@ -100,7 +103,7 @@ def main_func():
 	codes = getStackCode(requests.get(urlCode).text)
 	codeList = []
 	for item in codes:
-		if(item[0:3]=='600' or item[0:2]=='00'):
+		if(item[0:2]=='60' or item[0:2]=='00'):
 			codeList.append(item)
 
 	dayStart = (datetime.now() - timedelta(days=200)).strftime('%Y%m%d')
@@ -111,13 +114,18 @@ def main_func():
 		#passCodes = text.split(',')
 		
 	with open('passcode.txt', 'a') as f:
-		for code in codeList[-300: ]:
+		#for code in codeList[-1500: ]:
+		for code in codeList:
 			#base case
 			if(code in passCodes):
 				continue
-			time.sleep(1)
+			print(code)
+			time.sleep(5)
 			passFlag = False
 			caiWu = catchStockCaiWu(code)
+			if(not caiWu):
+				f.write(code+',')
+				continue
 			if(caiWu.retainedProfits < 0):	#净利润
 				passFlag = True
 			if(caiWu.IncomeYOYRate < 0):	#营收同比率
@@ -132,7 +140,7 @@ def main_func():
 			codeFalg = '0'
 			if(code[0] == '0'):
 				codeFalg = '1'
-			time.sleep(1)
+			time.sleep(3)
 			rb = requests.get(urlHistory.format(codeFalg, code, dayStart))
 			rb.encoding = 'gb2312'
 			list = rb.text.split('\r\n')
@@ -140,13 +148,12 @@ def main_func():
 			list.pop()
 			if(len(list) < 3):
 				passFlag = True
-			elif( float(list[-1].split(',')[4]) == 0 ):
+			elif( float(list[0].split(',')[4]) == 0 ):
 				passFlag = True
 				
 			if(passFlag):
 				f.write(code+',')
 				continue
-				
 			
 			candleList = []
 			kdjList = [stock.KDJEn(caiWu.name, 50), ]
@@ -160,16 +167,19 @@ def main_func():
 				#if(code == '002860'):
 					#utils.printObjVal(kdjList[-1])
 			popList = []
+			isCode = False
 			for i in range(3):
 				if(utils.buyKdjCondition(kdjList)):
 					if(len(popList) > 0):
 						if( popList[0].k - kdjList[-1].k > 0 and popList[0].d - kdjList[-1].d > 0 and popList[0].j - kdjList[-1].j > 0 ):
 							print(kdjList[-1].name, code)
+							isCode = True
 					else:
 						print(kdjList[-1].name, code)
+						isCode = True
 					break
 				popList.append(kdjList.pop())
-			if(i == 2):
+			if(not isCode):
 				f.write(code+',')
 			#测试
 			#if(code == '002863'):
